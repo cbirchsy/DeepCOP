@@ -4,6 +4,7 @@ import time
 import numpy as np
 from Helpers.data_loader import get_feature_dict, load_gene_expression_data, printProgressBar
 import sys
+import os
 
 start_time = time.time()
 gene_count_data_limit = 978
@@ -11,7 +12,8 @@ gene_count_data_limit = 978
 target_cell_names = ['HT29']
 test_blind = True
 save_xy_path = "TrainData/"
-LINCS_data_path = "/data/datasets/gwoo/L1000/LDS-1191/Data/"  # set this path to your LINCS gctx file
+os.makedirs(save_xy_path, exist_ok=True)
+LINCS_data_path = os.environ.get('LINCS_data_path')+'/'  # set this path to your LINCS gctx file
 if LINCS_data_path == "":
     print("You need to set the LINCS data path")
     sys.exit()
@@ -216,5 +218,5 @@ for target_cell_name in target_cell_names:
             model_file_prefix = save_xy_path + target_cell_name + '_' + direction + '_' + str(percentile_down) + 'p'
             save_file = model_file_prefix + "_Y_class"
             print("saved", save_file)
-            npY = npY_class_up if direction == "up" else npY_class_down
+            npY = npY_class_up if direction == "Up" else npY_class_down
             np.savez(save_file, npY)
