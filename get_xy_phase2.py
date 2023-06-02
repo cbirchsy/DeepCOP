@@ -4,13 +4,15 @@ import time
 import numpy as np
 from Helpers.data_loader import get_feature_dict, load_gene_expression_data, printProgressBar
 import sys
+import os
 
 start_time = time.time()
 gene_count_data_limit = 978
 target_cell_names = ['LNCAP']
 test_blind = True
 save_xy_path = "TrainData/"
-LINCS_data_path = ""  # set this path to your LINCS gctx file
+os.makedirs(save_xy_path, exist_ok=True)
+LINCS_data_path = os.environ.get('LINCS_data_path')+'/'  # set this path to your LINCS gctx file
 if LINCS_data_path == "":
     print("You need to set the LINCS data path")
     sys.exit()
@@ -30,10 +32,10 @@ def find_nth(haystack, needle, n):
 
 def get_gene_id_dict():
     lm_genes = json.load(open('Data/landmark_genes.json'))
-    dict = {}
+    gene_dict = {}
     for lm_gene in lm_genes:
-        dict[lm_gene['entrez_id']] = lm_gene['gene_symbol']
-    return dict
+        gene_dict[lm_gene['entrez_id']] = lm_gene['gene_symbol']
+    return gene_dict
 
 
 def get_class_vote(pert_list, bottom_threshold, top_threshold):
@@ -74,15 +76,15 @@ print(datetime.datetime.now(), "Loading drug and gene features")
 drug_features_dict = get_feature_dict('Data/phase2_compounds_morgan_2048.csv')
 gene_features_dict = get_feature_dict('Data/go_fingerprints.csv')
 cell_name_to_id_dict = get_feature_dict('Data/Phase2_Cell_Line_Metadata.txt', '\t', 2)
-experiments_dose_dict = get_feature_dict(LINCS_data_path + 'GSE70138_Broad_LINCS_sig_info.txt', '\t', 0)
+experiments_dose_dict = get_feature_dict(LINCS_data_path + 'GSE70138_Broad_LINCS_sig_info_2017-03-06.txt', '\t', 0)
 gene_id_dict = get_gene_id_dict()
 
 lm_gene_entrez_ids = []
 for gene in gene_id_dict:
-    lm_gene_entrez_ids.append(get_their_id(gene))
+    lm_gene_entrez_ids.append(gene)
 
 print("Loading gene expressions from gctx")
-level_5_gctoo = load_gene_expression_data(LINCS_data_path + "GSE70138_Broad_LINCS_Level5_COMPZ_n118050x12328.gctx",
+level_5_gctoo = load_gene_expression_data(LINCS_data_path + "GSE70138_Broad_LINCS_Level5_COMPZ_n118050x12328_2017-03-06.gctx",
                                           lm_gene_entrez_ids)
 length = len(level_5_gctoo.col_metadata_df.index)
 # length = 10000
@@ -111,7 +113,7 @@ for target_cell_name in target_cell_names:
             continue
 
         # get drug features
-        col_name_key = col_name[2:-1]
+        col_name_key = col_name
         if col_name_key not in experiments_dose_dict:
             continue
         experiment_data = experiments_dose_dict[col_name_key]
@@ -142,7 +144,7 @@ for target_cell_name in target_cell_names:
         cell_id = cell_name_to_id_dict[cell_name][0]
 
         for gene_id in lm_gene_entrez_ids:
-            our_gene_id = get_our_id(gene_id)
+            our_gene_id = gene_id
             gene_symbol = gene_id_dict[our_gene_id]
 
             if gene_symbol not in gene_features_dict:
