@@ -33,10 +33,10 @@ def find_nth(haystack, needle, n):
 
 def get_gene_id_dict():
     lm_genes = json.load(open('Data/landmark_genes.json'))
-    dict = {}
+    gene_dict = {}
     for lm_gene in lm_genes:
-        dict[lm_gene['entrez_id']] = lm_gene['gene_symbol']
-    return dict
+        gene_dict[lm_gene['entrez_id']] = lm_gene['gene_symbol']
+    return gene_dict
 
 
 def get_class_vote(pert_list, bottom_threshold, top_threshold):
@@ -80,7 +80,6 @@ print("Loading gene expressions from gctx")
 level_5_gctoo = load_gene_expression_data(LINCS_data_path + "GSE92742_Broad_LINCS_Level5_COMPZ.MODZ_n473647x12328.gctx",
                                           lm_gene_entrez_ids)
 length = len(level_5_gctoo.col_metadata_df.index)
-# length = 10000
 
 for target_cell_name in target_cell_names:
     target_cell_id = cell_name_to_id_dict[target_cell_name][0]
@@ -106,7 +105,7 @@ for target_cell_name in target_cell_names:
             continue
 
         # get drug features
-        col_name_key = col_name[2:-1]
+        col_name_key = col_name
         if col_name_key not in experiments_dose_dict:
             continue
         experiment_data = experiments_dose_dict[col_name_key]
